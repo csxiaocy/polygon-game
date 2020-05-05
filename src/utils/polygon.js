@@ -1,7 +1,8 @@
 import { drawCircle, getRandomColor } from './base'
 
 // 绘制圆形的半径
-const CIRCLE_RADIUS = 15
+const CIRCLE_RADIUS = 20
+const CLICK_SCOPE = 10
 
 // 多边形类
 class Polygon {
@@ -13,21 +14,23 @@ class Polygon {
    * points: Array 点集
    * edges: Array 边集
    */
-  constructor ({ ele, width = 500, height = 300, number = 3, points = null, edges = null }) {
+  constructor ({ ele, width = 500, height = 300, points = null, edges = null }) {
     // 获取canvas元素和context
     this.canvas = document.getElementById(ele)
     this.canvas.width = width
     this.canvas.height = height
     this.context = this.canvas.getContext('2d')
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     // 游戏初始数据
     // this.number = number
-    points = points || [0, 1, 2, 3, 4, 5]
-    this.number = points.length
+    points = points || [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    this.originalPoints = points // 保留原始数据
+    this.number = this.originalPoints.length // 数组原始长度
     this.points = []
-    points.forEach(ele => this.points.push({ value: ele, x: null, y: null }))
+    points.forEach(ele => this.points.push({ value: ele, x: null, y: null, color: getRandomColor() }))
     // 边集 第0个表示第0个点和第1个点之间的边 ... 最后一个表示最后一个点和第0个点之间的边
-    edges = edges || ['＋', '×', '＋', '×', '×', '＋']
+    edges = edges || ['＋', '×', '＋', '×', '×', '＋', '＋', '×', '×', '＋']
     this.edges = []
     edges.forEach((operation, i) => this.edges.push({ start: i, end: (i + 1) % this.number, operation }))
     /**
@@ -44,6 +47,9 @@ class Polygon {
     // 渲染
     this.calculatePosition()
     this.draw()
+
+    // 添加点击事件监听
+    this.canvas.addEventListener('click', (event) => this.handleClickEvent(event, this.points, this.edges, this.number))
   }
 
   calculatePosition () {
@@ -73,7 +79,7 @@ class Polygon {
     })
     context.stroke()
     // 绘制圆形
-    points.forEach(point => point !== null && drawCircle(context, point.x, point.y, CIRCLE_RADIUS, getRandomColor()))
+    points.forEach(point => point !== null && drawCircle(context, point.x, point.y, CIRCLE_RADIUS, point.color))
     // 绘制文字
     context.fillStyle = '#000'
     context.textAlign = 'center'
@@ -89,6 +95,28 @@ class Polygon {
     })
   }
 
+  // 点击事件处理
+  handleClickEvent (event, points, edges, number) {
+    // 获取点击位置
+    const x = event.layerX
+    const y = event.layerY
+    let index = -1
+    // 判断属于哪个index
+    for (let i = 0; i < edges.length; i++) {
+      const _centerX = (points[edges[i].start].x + points[edges[i].end].x) / 2
+      const _centerY = (points[edges[i].start].y + points[edges[i].end].y) / 2
+      if (x > _centerX - CLICK_SCOPE && x < _centerX + CLICK_SCOPE &&
+        y > _centerY - CLICK_SCOPE && y < _centerY + CLICK_SCOPE) {
+        index = i
+        break
+      }
+    }
+    // 事件处理
+    if (index !== -1) {
+      edges.length === number ? this.deleteEdge(index, true) : this.deleteEdge(index)
+    }
+  }
+
   // 删除边  index下标
   deleteEdge (index, isFirst = false) {
     const { points, edges, delEdges, delPoints } = this
@@ -102,7 +130,10 @@ class Polygon {
         : points[delEdge.start].value * points[delEdge.end].value
       delPoints.push({ ...(points[delEdge.start]), oldIndex: delEdge.start })
       points.splice(delEdge.start, 1, null)
-      index && (edges[(index - 1 + edges.length) % edges.length].end = delEdge.end)
+      // 某些情况下需要修改边的指向
+      edges.forEach(edge => {
+        (edge.end === delEdge.start) && (edge.end = delEdge.end)
+      })
     }
     this.draw()
   }
@@ -111,16 +142,20 @@ class Polygon {
   withdraw () {
     const { points, edges, delEdges, delPoints } = this
     if (delEdges.length === 0) return
+    // this.deleteEdge的逆过程
     const { oldIndex, ...delEdge } = delEdges.pop()
+    edges.forEach(edge => {
+      (edge.end === delEdge.end) && (edge.end = delEdge.start)
+    })
     edges.splice(oldIndex, 0, delEdge)
-    oldIndex && (edges[(oldIndex - 1 + edges.length) % edges.length].end = delEdge.start)
     if (delPoints.length !== 0) {
       // 还原
       const { oldIndex, ...point } = delPoints.pop()
       points[oldIndex] = point
       points[delEdge.end].value = delEdge.operation === '＋'
-        ? points[delEdge.end].value - point.value
-        : points[delEdge.end].value / point.value
+        ? parseInt(points[delEdge.end].value - point.value)
+        : parseInt(points[delEdge.end].value / point.value)
+      isNaN(points[delEdge.end].value) && (points[delEdge.end].value = this.originalPoints[delEdge.end])
     }
     this.draw()
   }

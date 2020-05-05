@@ -36,4 +36,17 @@ export const drawCircle = (context, x, y, radius, color) => {
 }
 
 // 随机生成数据和操作符
-export const generateRandomData = () => {}
+export const generateRandomData = () => {
+  let number = parseInt(Math.random() * 8 + 3) // 3 - 10范围
+  const operations = ['＋', '×']
+  const points = []
+  const edges = []
+  while (number--) {
+    points.push(parseInt(Math.random() * 22 - 11))
+    edges.push(operations[parseInt(Math.round(Math.random()))])
+  }
+  return {
+    points,
+    edges
+  }
+}
