@@ -2,6 +2,7 @@ import { drawCircle, getRandomColor } from './base'
 
 // 绘制圆形的半径
 const CIRCLE_RADIUS = 20
+// 点击事件监听的范围
 const CLICK_SCOPE = 10
 
 // 多边形类
@@ -14,7 +15,7 @@ class Polygon {
    * points: Array 点集
    * edges: Array 边集
    */
-  constructor ({ ele, width = 500, height = 300, points = null, edges = null }) {
+  constructor ({ ele, width = 1000, height = 800, points = null, edges = null }) {
     // 获取canvas元素和context
     this.canvas = document.getElementById(ele)
     this.canvas.width = width
@@ -57,7 +58,7 @@ class Polygon {
     // 计算中心点的坐标和多边形的半径
     const centerX = parseInt(canvas.width / 2)
     const centerY = parseInt(canvas.height / 2)
-    const radius = parseInt(Math.min(canvas.width, canvas.height) / 4)
+    const radius = parseInt(Math.min(canvas.width, canvas.height) / 8) * 3
     // 计算每个点的位置
     points.forEach((point, i) => {
       point.x = centerX + radius * Math.cos(2 * i * Math.PI / number)
@@ -71,6 +72,7 @@ class Polygon {
     context.clearRect(0, 0, canvas.width, canvas.height)
     // 绘制多边形
     context.fillStyle = '#000'
+    context.beginPath()
     edges.forEach(edge => {
       if (edge !== null) {
         context.moveTo(points[edge.start].x, points[edge.start].y)
@@ -78,6 +80,7 @@ class Polygon {
       }
     })
     context.stroke()
+    context.closePath()
     // 绘制圆形
     points.forEach(point => point !== null && drawCircle(context, point.x, point.y, CIRCLE_RADIUS, point.color))
     // 绘制文字
