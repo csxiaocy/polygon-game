@@ -1,0 +1,127 @@
+/* 清除网页默认样式 */
+* {
+	margin: 0;
+	padding: 0;
+}
+li {
+	list-style: none;
+}
+
+/* header部分开始 */
+#header {
+	font: normal 700 30px "宋体";
+	text-align: center;
+
+}
+/* header部分结束 */
+
+/* banner部分开始 */
+#body {
+	margin: 0 auto;
+	width: 1475px;
+	height: 615px;
+	border: 2px solid #fff;
+	background: #fff url('images/background.png') no-repeat bottom center;
+}
+/* banner部分结束 */
+
+/* left部分开始 */
+#body #left {
+	float: left;
+	margin-top: 90px;
+	margin-left: 250px;
+	width: 280px;
+	height: 450px;
+	border: 3px solid #ccc;
+}
+#gamechoice {
+	width: 280px;
+	height: 100px;
+
+}
+#gamechoice li {
+	display: inline-block;
+	margin-top: 20px;
+	margin-left: 12px;
+	width: 110px;
+	height: 40px;
+	line-height: 40px;
+	background-color: rgba(0, 0, 0, 0.1);
+	border: 2px solid #000;
+	border-radius: 10px;
+	text-align: center;
+	font-size: 18px;
+}
+#gamechoice li:hover {
+	background-color: rgba(0, 0, 0, 0.3);
+}
+#randomgame {
+	width: 280px;
+	height: 150px;
+}
+#randomgame li {
+	font-size: 20px;
+	text-align: center;
+	margin-top: 15px;
+}
+#gamebutton {
+	width: 280px;
+	height: 200px;
+}
+#gamebutton li {
+	display: inline-block;
+	margin-top: 20px;
+	margin-left: 85px;
+	width: 110px;
+	height: 40px;
+	line-height: 40px;
+	background-color: rgba(0, 0, 0, 0.1);
+	border: 2px solid #000;
+	border-radius: 10px;
+	text-align: center;
+	font-size: 18px;
+}
+/* left部分结束 */
+
+/* right部分开始 */
+#body #right {
+	float: right;
+	margin-right: 250px;
+	margin-top: 90px;
+	width: 686px;
+	height: 450px;
+	border: 3px solid #ccc;
+	border-left: none;
+}
+#photo {
+	margin-left: 40px;
+	margin-top: 20px;
+	width: 600px;
+	height: 300px;
+	border: 3px solid #ccc;
+}
+#undo {
+	float: left;
+	width: 110px;
+	height: 50px;
+	line-height: 50px;
+	margin: 40px 70px;
+	border: 2px solid #000;
+	border-radius: 10px;
+	background: rgba(0, 0, 0, .03) url('images/undoicon.png') no-repeat center left;
+	padding-left: 50px;
+	font-size: 17px;
+}
+#answer {
+	float: right;
+	width: 100px;
+	height: 50px;
+	line-height: 50px;
+	margin: 40px 70px;
+	border: 2px solid #000;
+	border-radius: 10px;
+	text-align: center;
+	font-size: 17px;
+}
+/* right部分结束 */
+
