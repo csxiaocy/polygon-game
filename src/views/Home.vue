@@ -68,7 +68,7 @@
       title="自定义游戏数据"
       :visible.sync="drawer"
     >
-      <div style="display: inline-block;">
+      <div>
         <el-dropdown @command="handleSelectPointNum">
           <span class="el-dropdown-link">
             请选择点的个数<i class="el-icon-arrow-down el-icon--right"></i>
@@ -84,22 +84,30 @@
         >
         </el-input>
       </div>
-      <div v-if="this.customPointNum !== 0">
-        <el-divider content-position="left">设置点的数值</el-divider>
-        <div v-for="(value, index) in tempCustomPoints" :key="index" style="margin: 6px auto;">
-          <span style="font-size: 14px;font-weight: 700;opacity: 0.4;margin-right: 10px;">点{{index+1}}</span>
-          <el-input-number v-model="customPoints[index]" size="mini" :min="-10" :max="10"
-          ></el-input-number>
+      <div v-if="this.customPointNum !== 0" style="margin: 12px 20px;">
+        <el-collapse v-model="drawerActiveNames">
+          <el-collapse-item title="设置点的数值" name="1">
+          <!-- <el-divider content-position="left">设置点的数值</el-divider> -->
+            <div v-for="(value, index) in tempCustomPoints" :key="index" style="margin: 6px auto;">
+              <span style="font-size: 14px;font-weight: 700;opacity: 0.4;margin-right: 10px;">点{{index+1}}</span>
+              <el-input-number v-model="customPoints[index]" size="mini" :min="-10" :max="10"
+              ></el-input-number>
+            </div>
+          </el-collapse-item>
+          <el-collapse-item title="设置边的操作符" name="2">
+          <!-- <el-divider content-position="left">设置边的操作符</el-divider> -->
+            <div v-for="(value, index) in tempCustomPoints" :key="index+11" style="margin: 6px auto;">
+              <span style="font-size: 14px;font-weight: 700;opacity: 0.4;margin-right: 10px;">边{{index+1}}</span>
+              <el-radio v-model="customEdges[index]" label="＋">＋</el-radio>
+              <el-radio v-model="customEdges[index]" label="×">×</el-radio>
+            </div>
+          </el-collapse-item>
+        </el-collapse>
+        <!-- <el-divider></el-divider> -->
+        <div style="margin: 60px auto;">
+          <el-button type="primary" round @click="customGame()">确定</el-button>
+          <el-button type="info" round @click="cancelCustomGame()">清空</el-button>
         </div>
-        <el-divider content-position="left">设置边的操作符</el-divider>
-        <div v-for="(value, index) in tempCustomPoints" :key="index+11" style="margin: 6px auto;">
-          <span style="font-size: 14px;font-weight: 700;opacity: 0.4;margin-right: 10px;">边{{index+1}}</span>
-          <el-radio v-model="customEdges[index]" label="＋">＋</el-radio>
-          <el-radio v-model="customEdges[index]" label="×">×</el-radio>
-        </div>
-        <el-divider></el-divider>
-        <el-button type="primary" round @click="customGame()">确定</el-button>
-        <el-button type="info" round @click="cancelCustomGame()">取消</el-button>
       </div>
     </el-drawer>
   </div>
@@ -124,7 +132,8 @@ export default {
       customPointNum: 0, // 自定义的点的个数
       tempCustomPoints: [], // 中间需要的
       customPoints: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // 自定义的点集（要截取）
-      customEdges: ['＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋'] // 自定义的边集（要截取）
+      customEdges: ['＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋'], // 自定义的边集（要截取）
+      drawerActiveNames: ['1', '2']
     }
   },
   methods: {
@@ -184,6 +193,7 @@ export default {
       this.customPointNum = 0
       this.customPoints = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
       this.customEdges = ['＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋']
+      // this.drawer = false
     },
     // 返回一步
     withdraw () {
