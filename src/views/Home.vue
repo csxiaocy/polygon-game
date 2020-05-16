@@ -15,7 +15,7 @@
       <div id="left">
         <div id="gamechoice">
           <ul>
-            <li @click="randomGame()">随机游戏</li>
+            <li @click="randomGame">随机游戏</li>
             <li @click="drawer = true">自定义游戏</li>
           </ul>
         </div>
@@ -50,9 +50,9 @@
             Your browser does not support the canvas element.
           </canvas>
         </div>
-        <el-button type="info" icon="el-icon-back" round style="margin-top: 10px;" @click="withdraw()">返回上一步</el-button>
+        <el-button type="info" icon="el-icon-back" round style="margin-top: 10px;" @click="withdraw">返回上一步</el-button>
         <!-- <div id="undo"><i class="el-icon-back"></i>返回上一步</div> -->
-        <div id="answer" @click="startGame()">最佳结果</div>
+        <div id="answer" @click="showBestPath">最佳结果</div>
       </div>
       <!-- 右盒子结束 -->
     </div>
@@ -60,7 +60,7 @@
 
     <!-- 氪金通道 -->
     <el-badge value="hot" style="float: left;">
-      <el-button size="small" @click="chargeMoney()">氪金通道</el-button>
+      <el-button size="small" @click="chargeMoney">氪金通道</el-button>
     </el-badge>
 
     <!-- 右侧自定义数据栏 -->
@@ -105,17 +105,32 @@
         </el-collapse>
         <!-- <el-divider></el-divider> -->
         <div style="margin: 60px auto;">
-          <el-button type="primary" round @click="customGame()">确定</el-button>
-          <el-button type="info" round @click="cancelCustomGame()">清空</el-button>
+          <el-button type="primary" round @click="customGame">确定</el-button>
+          <el-button type="info" round @click="cancelCustomGame">清空</el-button>
         </div>
       </div>
     </el-drawer>
+    <div class="tc" v-show="isAiPathShow">
+      <span id="close" @click="closePathShowWindow">X</span>
+      <div id="bk">
+        <canvas
+          id="bestpath"
+          width="650px"
+          height="370px"
+        >
+          Your browser does not support the canvas element.
+        </canvas>
+      </div>
+      <div id="lastone" @click="showBestPathPrev">上一步</div>
+      <div id="nextone" @click="showBestPathNext">下一步</div>
+    </div>
   </div>
 </template>
 
 <script>
 import Polygon from '../utils/polygon.js'
 import { generateRandomData } from '../utils/base.js'
+import ploygonAlgoAdapter from '../utils/algorithm'
 
 export default {
   name: 'Home',
@@ -133,7 +148,15 @@ export default {
       tempCustomPoints: [], // 中间需要的
       customPoints: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], // 自定义的点集（要截取）
       customEdges: ['＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋', '＋'], // 自定义的边集（要截取）
-      drawerActiveNames: ['1', '2']
+      drawerActiveNames: ['1', '2'],
+      /** 最佳路径相关的 */
+      isAiPathShow: false,
+      showPathPolygon: null, // 最佳路径多边形类
+      maxScore: 0, // 最好分数
+      bestPath: [], // 最佳路径
+      showingPathIndex: 0, // 正在展示的路径的下标
+      tmpEdges: [], // 临时边数组
+      tmpDelEdges: [] // 临时的删边数组
     }
   },
   methods: {
@@ -223,6 +246,60 @@ export default {
       {
         dangerouslyUseHTMLString: true
       })
+    },
+    // 展示最佳路径
+    showBestPath () {
+      // 生成最佳路径
+      if (this.points.length !== 0) {
+        const { score, order } = ploygonAlgoAdapter(this.points, this.edges)
+        this.maxScore = score
+        this.bestPath = order
+        this.showPathPolygon = new Polygon({
+          ele: 'bestpath',
+          width: 650,
+          height: 370,
+          points: this.points,
+          edges: this.edges,
+          isListenClickEvent: false
+        })
+        // 展示
+        this.isAiPathShow = true
+        // 初始化
+        this.showingPathIndex = 0
+        this.tmpEdges = []
+        this.edges.forEach((_, index) => this.tmpEdges.push(index))
+      }
+    },
+    // 展示最佳路径上一步
+    showBestPathPrev () {
+      if (this.showingPathIndex !== 0) {
+        // showBestPathNext back
+        this.showPathPolygon.withdraw()
+        const { val: delEdge, oldIndex } = this.tmpDelEdges.pop()
+        this.tmpEdges.splice(oldIndex, 0, delEdge)
+        this.showingPathIndex--
+      }
+    },
+    // 展示最佳路径下一步
+    showBestPathNext () {
+      if (this.showingPathIndex !== this.bestPath.length) {
+        for (let i = 0; i < this.bestPath.length; i++) {
+          if (this.tmpEdges[i] === this.bestPath[this.showingPathIndex]) {
+            this.showPathPolygon.deleteEdge(i, this.showingPathIndex === 0)
+            const delEdge = this.tmpEdges[i]
+            this.tmpEdges.splice(i, 1)
+            this.tmpDelEdges.push({ val: delEdge, oldIndex: i })
+            this.showingPathIndex++
+            break
+          }
+        }
+      }
+    },
+    // 关闭展示窗口
+    closePathShowWindow () {
+      this.isAiPathShow = false
+      this.showPathPolygon.delete()
+      this.showPathPolygon = null
     }
   }
 }
@@ -355,5 +432,66 @@ export default {
   }
   .el-icon-arrow-down {
     font-size: 12px;
+  }
+
+  .bgbox {
+    width: 1800px;
+    height: 1800px;
+    background-color: #ccc;
+  }
+  .tc {
+    width: 730px;
+    height: 510px;
+    background: red;
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    margin-left: -375px;
+    background: #fff url("../assets/onbox.png") no-repeat left 19px;
+    z-index: 10;
+  }
+  #close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 30px;
+    color: #fff;
+    text-align: center;
+    font: normal 700 16px "微软雅黑";
+    z-index: 100;
+    background-color: rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+  }
+  #bk {
+    width: 650px;
+    height: 370px;
+    margin-left: 38px;
+    margin-top: 60px;
+  }
+  #lastone {
+    float: left;
+    width: 100px;
+    height: 30px;
+    line-height: 30px;
+    margin-top: 2px;
+    margin-left: 100px;
+    border: 2px solid #000;
+    border-radius: 7px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #nextone {
+    float: right;
+    width: 100px;
+    height: 30px;
+    line-height: 30px;
+    margin-top: 2px;
+    margin-right: 100px;
+    border: 2px solid #000;
+    border-radius: 7px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
   }
 </style>

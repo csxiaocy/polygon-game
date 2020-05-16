@@ -15,7 +15,7 @@ class Polygon {
    * points: Array 点集
    * edges: Array 边集
    */
-  constructor ({ ele, width = 1000, height = 800, points = null, edges = null }) {
+  constructor ({ ele, width = 1000, height = 800, points = null, edges = null, isListenClickEvent = true }) {
     // 获取canvas元素和context
     this.canvas = document.getElementById(ele)
     this.canvas.width = width
@@ -49,8 +49,8 @@ class Polygon {
     this.calculatePosition()
     this.draw()
 
-    // 添加点击事件监听
-    this.canvas.addEventListener('click', (event) => this.handleClickEvent(event, this.points, this.edges, this.number))
+    // 是否添加点击事件监听
+    isListenClickEvent && this.canvas.addEventListener('click', (event) => this.handleClickEvent(event, this.points, this.edges, this.number))
   }
 
   calculatePosition () {
@@ -96,6 +96,10 @@ class Polygon {
         (points[edge.start].y + points[edge.end].y) / 2
       )
     })
+    // 绘制当前分数
+    // context.font = '20px 微软雅黑'
+    context.textAlign = 'left'
+    context.fillText(`当前分数: ${this.delEdges.length ? this.getCurrentScore().toString() : '0'}`, 6, 20)
   }
 
   // 点击事件处理
@@ -118,6 +122,18 @@ class Polygon {
     if (index !== -1) {
       edges.length === number ? this.deleteEdge(index, true) : this.deleteEdge(index)
     }
+  }
+
+  // 计算当前分数
+  getCurrentScore () {
+    let score = -Infinity
+    const points = this.points
+    for (let i = 0; i < points.length; i++) {
+      if (points[i] && (score < points[i].value)) {
+        score = points[i].value
+      }
+    }
+    return score
   }
 
   // 删除边  index下标
