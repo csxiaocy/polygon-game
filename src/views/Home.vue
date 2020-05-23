@@ -60,7 +60,7 @@
 
     <!-- 氪金通道 -->
     <el-badge value="hot" style="float: left;">
-      <el-button size="small" @click="chargeMoney">氪金通道</el-button>
+      <el-button size="small" @click="chargeMoney">双人游戏</el-button>
     </el-badge>
 
     <!-- 右侧自定义数据栏 -->
@@ -239,13 +239,15 @@ export default {
     },
     // 氪金通道
     chargeMoney () {
-      this.$alert(`
-        <img src="http://111.230.147.75/payme.png" alt="支付二维码" style="width: 200px;height: 200px;"></img>
-      `,
-      '氪金通道',
-      {
-        dangerouslyUseHTMLString: true
-      })
+      // this.$alert(`
+      //   <img src="http://111.230.147.75/payme.png" alt="支付二维码" style="width: 200px;height: 200px;"></img>
+      // `,
+      // '氪金通道',
+      // {
+      //   dangerouslyUseHTMLString: true
+      // })
+      // 跳转到双人游戏界面
+      this.$router.push({ name: 'Double' })
     },
     // 展示最佳路径
     showBestPath () {
